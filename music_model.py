@@ -112,10 +112,6 @@ class PopMusicTransformer(object):
         # 新增：全域初始化 op
         self._init_op = tf.compat.v1.global_variables_initializer()
         self.sess.run(self._init_op)
-        print("[PopMT] init_mode:", self.init_mode)
-        print("[PopMT] checkpoint dir:", self.checkpoint)
-        print("[PopMT] restore_path:", self.restore_path)
-        print("[PopMT] dictionary_path:", self.dictionary_path)
  
         # ⭐ 核心開關：random init 或 restore
         # if self.init_mode == "from_checkpoint":
