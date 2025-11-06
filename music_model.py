@@ -14,7 +14,7 @@ class PopMusicTransformer(object):
     def __init__(self, checkpoint=None, is_training=False,
                 init_mode="from_checkpoint", dictionary_path=None, restore_path=None):
         # load dictionary
-        self.dictionary_path = '{}/dictionary.pkl'.format(checkpoint)
+        self.dictionary_path = dictionary_path.format(checkpoint)
         self.event2word, self.word2event = pickle.load(open(self.dictionary_path, 'rb'))
         # model settings
         self.x_len = 512
@@ -183,7 +183,7 @@ class PopMusicTransformer(object):
             if not pairs:
                 continue
 
-            pairs = np.asarray(pairs, dtype=int)  # [num_pairs, 2, x_len]
+            pairs = np.asarray(pairs, dtype=np.int32)  # [num_pairs, 2, x_len]
 
             # 按照你原本的 stride 規則分 group
             for i in np.arange(0, len(pairs) - group_size, group_size * 2):
@@ -192,9 +192,9 @@ class PopMusicTransformer(object):
                     all_groups.append(data)
 
         if not all_groups:
-            return np.empty((0, group_size, 2, x_len), dtype=int)
+            return np.empty((0, group_size, 2, x_len), dtype=np.int32)
 
-        segments = np.asarray(all_groups, dtype=int)  # [N_groups, group_size, 2, x_len]
+        segments = np.asarray(all_groups, dtype=np.int32)  # [N_groups, group_size, 2, x_len]
         return segments
 
     ########################################
