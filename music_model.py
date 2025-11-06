@@ -5,7 +5,7 @@ import modules
 import pickle
 import utils
 import time
-import os
+import os, glob
 
 class PopMusicTransformer(object):
     ########################################
@@ -112,7 +112,7 @@ class PopMusicTransformer(object):
         # 新增：全域初始化 op
         self._init_op = tf.compat.v1.global_variables_initializer()
         self.sess.run(self._init_op)
- 
+
         # ⭐ 核心開關：random init 或 restore
         # if self.init_mode == "from_checkpoint":
         #     if self.checkpoint_path is None:
@@ -160,11 +160,12 @@ class PopMusicTransformer(object):
     ########################################
     # load token from txt
     ########################################
-    def load_words_from_txt(path: str) -> list[int]:
+    def load_words_from_txt(self,path: str) -> list[int]:
         with open(path, "r") as f:
             return [int(line.strip()) for line in f if line.strip()]
 
     def make_segments_from_token_files(
+        self,
         token_files: list[str],
         x_len: int = 512,
         group_size: int = 5
@@ -172,7 +173,7 @@ class PopMusicTransformer(object):
 
         all_groups = []
         for fp in token_files:
-            words = load_words_from_txt(fp)
+            words = self.load_words_from_txt(fp)
             if len(words) < x_len + 1:
                 continue  # 太短的略過
 
@@ -324,8 +325,10 @@ class PopMusicTransformer(object):
             segments = np.array(segments)
             return segments
         else:
+            self.group_size = 5
             token_files = sorted(glob.glob("/content/drive/MyDrive/tokens/*.txt"))
-            segments = make_segments_from_token_files(token_files, x_len=512, group_size=5)
+            segments = self.make_segments_from_token_files(token_files, x_len=512, group_size=5)
+            return segments
 
     ########################################
     # finetune
@@ -336,6 +339,7 @@ class PopMusicTransformer(object):
         np.random.shuffle(index)
         training_data = training_data[index]
         num_batches = len(training_data) // self.batch_size
+        print(num_batches)
         st = time.time()
         for e in range(epoch):
             total_loss = []
