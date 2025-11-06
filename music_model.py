@@ -31,15 +31,18 @@ class PopMusicTransformer(object):
         # load model
         self.is_training = is_training
         if self.is_training:
-            self.batch_size = 4
+            self.batch_size = 8
         else:
             self.batch_size = 1
         
         self.checkpoint_dir = checkpoint
-        self.checkpoint_path = restore_path if restore_path else (
-            None if checkpoint is None else '{}/model'.format(checkpoint)
-        )
-
+        # self.checkpoint_path = restore_path if restore_path else (
+        #     None if checkpoint is None else '{}/model'.format(checkpoint)
+        # )
+        self.checkpoint_path = tf.compat.v1.train.latest_checkpoint(self.checkpoint_dir)
+        if self.checkpoint_path is None:
+            raise FileNotFoundError(f"找不到可用的 ckpt：{self.checkpoint_dir}")
+        
         # 記住初始化模式
         self.init_mode = init_mode
 
@@ -110,8 +113,8 @@ class PopMusicTransformer(object):
         self.sess = tf.compat.v1.Session(config=config)
         
         # 新增：全域初始化 op
-        self._init_op = tf.compat.v1.global_variables_initializer()
-        self.sess.run(self._init_op)
+        # self._init_op = tf.compat.v1.global_variables_initializer()
+        # self.sess.run(self._init_op)
 
         # ⭐ 核心開關：random init 或 restore
         # if self.init_mode == "from_checkpoint":
@@ -122,7 +125,7 @@ class PopMusicTransformer(object):
         #     self.sess.run(self._init_op)
         # else:
         #     raise ValueError("init_mode 必須是 'from_checkpoint' 或 'random'")
-        #self.saver.restore(self.sess, self.checkpoint_path)
+        self.saver.restore(self.sess, self.checkpoint_path)
 
     ########################################
     # temperature sampling
