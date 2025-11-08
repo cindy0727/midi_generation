@@ -31,7 +31,7 @@ class PopMusicTransformer(object):
         # load model
         self.is_training = is_training
         if self.is_training:
-            self.batch_size = 32
+            self.batch_size = 8
         else:
             self.batch_size = 1
         
