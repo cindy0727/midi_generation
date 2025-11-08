@@ -125,6 +125,7 @@ class PopMusicTransformer(object):
         #     self.sess.run(self._init_op)
         # else:
         #     raise ValueError("init_mode 必須是 'from_checkpoint' 或 'random'")
+        print("load model:",self.checkpoint_path)
         self.saver.restore(self.sess, self.checkpoint_path)
 
     ########################################
