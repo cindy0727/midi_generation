@@ -110,7 +110,23 @@ class PopMusicTransformer(object):
         self.saver = tf.compat.v1.train.Saver()
         config = tf.compat.v1.ConfigProto(allow_soft_placement=True)
         config.gpu_options.allow_growth = True
+        tf.compat.v1.disable_eager_execution()
+        tf.compat.v1.disable_v2_behavior()
         self.sess = tf.compat.v1.Session(config=config)
+        self.sess.run(tf.compat.v1.global_variables_initializer())
+        reader = tf.compat.v1.train.NewCheckpointReader(self.checkpoint_path)
+        ckpt_vars = set(reader.get_variable_to_shape_map().keys())
+        
+        graph_vars = tf.compat.v1.global_variables()
+        to_restore = [v for v in graph_vars if v.name.split(':')[0] in ckpt_vars]
+        to_init    = [v for v in graph_vars if v.name.split(':')[0] not in ckpt_vars]
+        
+        # 先把缺的（不在 ckpt）初始化，避免 NOT_FOUND
+        self.sess.run(tf.compat.v1.variables_initializer(to_init))
+        
+        # 只還原 ckpt 有的
+        self.saver = tf.compat.v1.train.Saver(var_list=to_restore)
+        self.saver.restore(self.sess, self.checkpoint_path)
         
         # 新增：全域初始化 op
         # self._init_op = tf.compat.v1.global_variables_initializer()
@@ -126,7 +142,7 @@ class PopMusicTransformer(object):
         # else:
         #     raise ValueError("init_mode 必須是 'from_checkpoint' 或 'random'")
         print("load model:",self.checkpoint_path)
-        self.saver.restore(self.sess, self.checkpoint_path)
+        # self.saver.restore(self.sess, self.checkpoint_path)
 
     ########################################
     # temperature sampling
